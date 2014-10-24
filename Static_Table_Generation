@@ -1,0 +1,64 @@
+Private Sub cmdStatic_Click()
+
+Dim tbl As AccessObject, db As Object
+Dim strNewTable As String
+Dim strOldTable As String
+
+Dim strSafe As String
+
+Dim strSQL As String
+
+DoCmd.SetWarnings False
+
+Set db = Application.CurrentData
+For Each tbl In db.AllTables
+    strOldTable = tbl.Name
+    strNewTable = strOldTable & "_STATIC"
+    strSafe = Left(strOldTable, 4)
+    
+    If strSafe <> "MSys" Then
+        strSQL = "SELECT " & strOldTable & ".* INTO " & strNewTable & " FROM " & strOldTable & ";"
+        DoCmd.RunSQL strSQL
+    End If
+    
+Next tbl
+ 
+Dim strCheckTable As String
+Dim strFindText As String
+Dim pos As Integer
+
+strFindText = "_STATIC"
+
+For Each tbl In db.AllTables
+     strCheckTable = tbl.Name
+     strSafe = Left(strCheckTable, 4)
+     If strSafe <> "MSys" Then
+         pos = InStr(strCheckTable, strFindText)
+         If pos = 0 Then
+            strSQL = "DROP TABLE " & strCheckTable
+            DoCmd.RunSQL strSQL
+        End If
+    End If
+Next tbl
+
+Dim strNewName As String
+Dim nLen As Integer
+Dim nNewLen As Integer
+
+For Each tbl In db.AllTables
+    strCheckTable = tbl.Name
+    strSafe = Left(strCheckTable, 4)
+    If strSafe <> "MSys" Then
+        nLen = Len(strCheckTable)
+        nNewLen = nLen - 7
+        
+        strNewName = Left(strCheckTable, nNewLen)
+        DoCmd.Rename strNewName, acTable, strCheckTable    
+        
+    End If
+Next tbl
+
+DoCmd.SetWarnings True
+
+
+End Sub
